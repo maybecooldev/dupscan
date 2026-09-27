@@ -50,6 +50,8 @@ interface Args {
   limit: string;
   json: boolean;
   dryRun: boolean;
+  help: boolean;
+  version: boolean;
 }
 
 function parseSize(raw: string): number {
@@ -82,16 +84,18 @@ function parseCli(argv: string[]): Args {
 
   return {
     positional: positionals,
-    minSize: values['min-size'],
+    minSize: values['min-size'] ?? '1',
     maxSize: values['max-size'],
     exclude: values.exclude,
     hidden: values.hidden,
     follow: values.follow,
-    avgChunk: values['avg-chunk'],
+    avgChunk: values['avg-chunk'] ?? '65536',
     limit: values.limit,
     json: values.json,
     dryRun: values['dry-run'],
-  } as unknown as Args;
+    help: values.help,
+    version: values.version,
+  };
 }
 
 function human(bytes: number): string {
