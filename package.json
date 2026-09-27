@@ -6,7 +6,7 @@
   "bin": { "dupscan": "./src/cli.ts" },
   "engines": { "node": ">=22.6" },
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test",
     "typecheck": "tsc --noEmit"
   },
   "keywords": ["deduplication", "duplicate-files", "chunker", "storage", "cli"],
