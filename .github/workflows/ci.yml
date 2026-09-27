@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: ["22", "24"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: npm install --no-save typescript @types/node
+      - run: npm run typecheck
+
+  self-scan:
+    # The tool has to work on a tree it did not create.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: build a tree with a known duplicate
+        run: |
+          mkdir -p /tmp/tree/a /tmp/tree/b
+          head -c 200000 /dev/urandom > /tmp/tree/a/one.bin
+          cp /tmp/tree/a/one.bin /tmp/tree/b/copy.bin
+          head -c 200000 /dev/urandom > /tmp/tree/b/other.bin
+      - name: dupscan finds it
+        run: |
+          set +e
+          node src/cli.ts /tmp/tree > report.txt
+          test $? -eq 1
+          set -e
+          grep -q "exact" report.txt
+          grep -q "a/one.bin" report.txt
+          grep -q "b/copy.bin" report.txt
